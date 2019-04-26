@@ -1,4 +1,5 @@
 use ansi_term::Color;
+use std::io;
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -12,13 +13,15 @@ use crate::context::Context;
 ///     - Current directory contains a `package.json` file
 ///     - Current directory contains a `node_modules` directory
 pub fn segment(context: &Context) -> Option<Segment> {
+    info!("Checking for JS files");
     let is_js_project = context.dir_files.iter().any(has_js_files);
     if !is_js_project {
+        info!("No JS project files found");
         return None;
     }
 
     match get_node_version() {
-        Some(node_version) => {
+        Ok(node_version) => {
             const NODE_CHAR: &str = "⬢";
             const SEGMENT_COLOR: Color = Color::Green;
 
@@ -30,7 +33,11 @@ pub fn segment(context: &Context) -> Option<Segment> {
 
             Some(segment)
         }
-        None => None,
+        Err(err) => {
+            info!("Node version is unavailable");
+            debug!("{}", err.to_string());
+            None
+        }
     }
 }
 
@@ -43,12 +50,21 @@ fn has_js_files(dir_entry: &PathBuf) -> bool {
         d.is_file() && d.file_name().unwrap_or_default() == "package.json"
     };
 
+    trace!("{}", dir_entry.to_str().unwrap_or("Unable to parse DirEntry"));
+    trace_checkbox!(is_js_file(&dir_entry), "*.js file");
+    trace_checkbox!(is_node_modules(&dir_entry), "node_modules folder");
+    trace_checkbox!(is_package_json(&dir_entry), "package.json file\n");
+
     is_js_file(&dir_entry) || is_node_modules(&dir_entry) || is_package_json(&dir_entry)
 }
 
-fn get_node_version() -> Option<String> {
+fn get_node_version() -> io::Result<String> {
     match Command::new("node").arg("--version").output() {
-        Ok(output) => Some(String::from_utf8(output.stdout).unwrap()),
-        Err(_) => None,
+        Ok(output) => {
+            let output_string = String::from_utf8(output.stdout).unwrap();
+            debug!("Output of `node --version`:\n{}", output_string);
+            Ok(output_string)
+        },
+        Err(err) => Err(err),
     }
 }
