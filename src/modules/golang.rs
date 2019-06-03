@@ -9,7 +9,7 @@ use super::{Context, Module};
 ///     - Current directory contains a `go.mod` file
 ///     - Current directory contains a `go.sum` file
 ///     - Current directory contains a `glide.yaml` file
-///     - Current directory contains a `Gopkg.yml` file
+///     - Current directory contains a `Gopkg.toml` file
 ///     - Current directory contains a `Gopkg.lock` file
 ///     - Current directory contains a `.go` file
 ///     - Current directory contains a `Godeps` directory
