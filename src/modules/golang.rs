@@ -16,7 +16,7 @@ use super::{Context, Module};
 pub fn segment(context: &Context) -> Option<Module> {
     let is_go_project = context
         .new_scan_dir()
-        .set_files(&["go.mod", "go.sum", "glide.yaml", "Gopkg.yml", "Gopkg.lock"])
+        .set_files(&["go.mod", "go.sum", "glide.yaml", "Gopkg.toml", "Gopkg.lock"])
         .set_extensions(&["go"])
         .set_folders(&["Godeps"])
         .scan();
