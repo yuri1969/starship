@@ -17,7 +17,8 @@ pub fn segment(context: &Context) -> Option<Module> {
             "requirements.txt",
             ".python-version",
             "pyproject.toml",
-            "pyproject.toml",
+            "Pipfile",
+            "Pipfile.lock",
         ])
         .set_extensions(&["py"])
         .scan();

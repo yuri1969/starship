@@ -107,9 +107,9 @@ fn folder_with_glide_yaml() -> io::Result<()> {
 
 #[test]
 #[ignore]
-fn folder_with_gopkg_yml() -> io::Result<()> {
+fn folder_with_gopkg_toml() -> io::Result<()> {
     let dir = common::new_tempdir()?;
-    File::create(dir.path().join("Gopkg.yml"))?;
+    File::create(dir.path().join("Gopkg.toml"))?;
 
     let output = common::render_module("golang")
         .arg("--path")
