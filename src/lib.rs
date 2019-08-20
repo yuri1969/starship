@@ -1,5 +1,6 @@
 // Lib is present to allow for benchmarking
 mod config;
+pub mod app;
 pub mod context;
 pub mod module;
 pub mod modules;

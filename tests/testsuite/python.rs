@@ -15,7 +15,8 @@ fn folder_with_python_version() -> io::Result<()> {
 
     let actual = common::render_module("python")
         .path(dir.path())
-        .output()?;
+        .output()
+        .unwrap();
 
     // let args = clap::ArgMatches::default();
 
