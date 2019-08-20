@@ -5,6 +5,7 @@ use ansi_term::Color;
 
 use crate::common;
 use crate::common::TestCommand;
+use starship::{context::Context, modules};
 
 #[test]
 #[ignore]
@@ -12,11 +13,20 @@ fn folder_with_python_version() -> io::Result<()> {
     let dir = common::new_tempdir()?;
     File::create(dir.path().join(".python-version"))?;
 
-    let output = common::render_module("python")
-        .arg("--path")
-        .arg(dir.path())
+    let actual = common::render_module("python")
+        .path(dir.path())
         .output()?;
-    let actual = String::from_utf8(output.stdout).unwrap();
+
+    // let args = clap::ArgMatches::default();
+
+    // let context = Context::new_with_dir(args, &dir.into_path());
+    // let actual = modules::handle("python", &context).unwrap().to_string();
+
+    // let output = common::render_module("python")
+    //     .arg("--path")
+    //     .arg(dir.path())
+    //     .output()?;
+    // let actual = String::from_utf8(output.stdout).unwrap();
 
     let expected = format!("via {} ", Color::Yellow.bold().paint("🐍 v3.6.9"));
     assert_eq!(expected, actual);

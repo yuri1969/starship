@@ -3,6 +3,7 @@ use crate::module::Module;
 
 use clap::ArgMatches;
 use git2::Repository;
+use std::collections::HashMap;
 use std::env;
 use std::ffi::OsStr;
 use std::fs;
@@ -31,6 +32,9 @@ pub struct Context<'a> {
     /// If `current_dir` is a git repository or is contained within one,
     /// this is the current branch name of that repo.
     pub branch_name: Option<String>,
+
+    /// Snapshot of environment variables when starship was called.
+    pub env_map: HashMap<String, String>,
 }
 
 impl<'a> Context<'a> {
@@ -52,6 +56,13 @@ impl<'a> Context<'a> {
         T: Into<PathBuf>,
     {
         let config = toml::value::Table::initialize();
+
+        // Create a HashMap out of environment variable iterator
+        let env_vars = env::vars();
+        let mut env_map = HashMap::with_capacity(env_vars.size_hint().0);
+        env_vars.for_each(|pair| {
+            env_map.insert(pair.0, pair.1);
+        });
 
         // TODO: Currently gets the physical directory. Get the logical directory.
         let current_dir = Context::expand_tilde(dir.into());
@@ -82,6 +93,7 @@ impl<'a> Context<'a> {
             dir_files,
             repo_root,
             branch_name,
+            env_map,
         }
     }
 
@@ -111,8 +123,9 @@ impl<'a> Context<'a> {
         Some(Module::new(name, config))
     }
 
-    // returns a new ScanDir struct with reference to current dir_files of context
-    // see ScanDir for methods
+    // Returns a new ScanDir struct with reference to current dir_files of context.
+    //
+    // See ScanDir for methods.
     pub fn new_scan_dir(&'a self) -> ScanDir<'a> {
         ScanDir {
             dir_files: self.dir_files.as_ref(),
@@ -121,10 +134,23 @@ impl<'a> Context<'a> {
             extensions: &[],
         }
     }
+
+    /// Sets an environment variable's value.
+    ///
+    /// For use in integration tests.
+    pub fn set_env(&mut self, key: &str, value: &str) -> &Self {
+        self.env_map.insert(key.to_string(), value.to_string());
+        self
+    }
+
+    pub fn clear_env(&mut self) -> &Self {
+        self.env_map.clear();
+        self
+    }
 }
 
 // A struct of Criteria which will be used to verify current PathBuf is
-// of X language, criteria can be set via the builder pattern
+// of X language, criteria can be set via the builder pattern.
 pub struct ScanDir<'a> {
     dir_files: &'a Vec<PathBuf>, // Replace with reference
     files: &'a [&'a str],
@@ -148,8 +174,8 @@ impl<'a> ScanDir<'a> {
         self
     }
 
-    /// based on the current Pathbuf check to see
-    /// if any of this criteria match or exist and returning a boolean
+    /// Based on the current Pathbuf check to see if any of these criteria match
+    /// or exist.
     pub fn scan(&mut self) -> bool {
         self.dir_files.iter().any(|path| {
             if path.is_dir() {
@@ -161,7 +187,7 @@ impl<'a> ScanDir<'a> {
     }
 }
 
-/// checks to see if the pathbuf matches a file or folder name
+/// Check if the PathBuf matches a file or folder name.
 pub fn path_has_name<'a>(dir_entry: &PathBuf, names: &'a [&'a str]) -> bool {
     let found_file_or_folder_name = names.iter().find(|file_or_folder_name| {
         dir_entry
@@ -177,7 +203,7 @@ pub fn path_has_name<'a>(dir_entry: &PathBuf, names: &'a [&'a str]) -> bool {
     }
 }
 
-/// checks if pathbuf matches the extension provided
+/// Check if the PathBuf matches the extension provided.
 pub fn has_extension<'a>(dir_entry: &PathBuf, extensions: &'a [&'a str]) -> bool {
     let found_ext = extensions.iter().find(|ext| {
         dir_entry
@@ -193,6 +219,7 @@ pub fn has_extension<'a>(dir_entry: &PathBuf, extensions: &'a [&'a str]) -> bool
     }
 }
 
+/// Get the current git branch of the given repo.
 fn get_current_branch(repository: &Repository) -> Option<String> {
     let head = repository.head().ok()?;
     let shorthand = head.shorthand();

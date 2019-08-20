@@ -110,10 +110,10 @@ fn main() {
                 init::init_stub(shell_name);
             }
         }
-        ("prompt", Some(sub_m)) => print::prompt(sub_m.clone()),
-        ("module", Some(sub_m)) => {
-            let module_name = sub_m.value_of("name").expect("Module name missing.");
-            print::module(module_name, sub_m.clone());
+        ("prompt", Some(args)) => print::prompt(args.clone()),
+        ("module", Some(args)) => {
+            let module_name = args.value_of("name").expect("Module name missing.");
+            print::module(module_name, args.clone());
         }
         _ => {}
     }

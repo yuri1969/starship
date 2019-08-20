@@ -1,4 +1,6 @@
+use clap::ArgMatches;
 use lazy_static::lazy_static;
+use starship::print;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::{io, process};
@@ -22,19 +24,93 @@ pub fn render_prompt() -> process::Command {
     command
 }
 
-/// Render a specific starship module by name
-pub fn render_module(module_name: &str) -> process::Command {
-    let mut command = process::Command::new("./target/debug/starship");
-
-    command
-        .arg("module")
-        .arg(module_name)
-        .env_clear()
-        .env("PATH", env!("PATH")) // Provide the $PATH variable so that external programs are runnable
-        .env("STARSHIP_CONFIG", EMPTY_CONFIG.as_os_str());
-
-    command
+pub fn render_module(module_name: &str) -> RenderModule {
+    RenderModule::new(module_name)
 }
+
+struct RenderModule {
+    module_name: String,
+    args: Vec<String>,
+    env: std::collections::HashMap<String, String>,
+}
+
+impl RenderModule {
+    fn new(module_name: &str) -> Self {
+        RenderModule {
+            module_name: module_name.to_owned(),
+            args: Vec::new(),
+            env: std::collections::HashMap::default(),
+        }
+    }
+
+    pub fn arg<T>(&self, arg: T) -> &Self
+    where
+        T: Into<String>,
+    {
+        self.args.push(arg.into());
+        self
+    }
+
+    pub fn path(&self, path: &std::path::Path) -> &Self {
+        self.arg(format!("--path={:?}", path.as_os_str()));
+        self
+    }
+
+    pub fn env<T>(&self, key: T, value: T) -> &Self 
+    where
+        T: Into<String>,
+    {
+        self.env.insert(key.into(), value.into());
+        self
+    }
+
+    pub fn output() -> Option<String> {
+        
+    }
+}
+
+//     pub fn set_args(&self, arguments: &str) -> Self {
+//         self.args =
+//     }
+// }
+
+// /// Render a specific starship module by name
+// pub fn render_module(module_name: &str) -> process::Command {
+//     let args = clap::ArgMatches::default();
+
+//     let context = Context::new_with_dir(args, &dir.into_path());
+//     let actual = modules::handle("python", &context).unwrap().to_string();
+
+//     let mut command = process::Command::new("./target/debug/starship");
+
+//     command
+//         .arg("module")
+//         .arg(module_name)
+//         .env_clear()
+//         .env("PATH", env!("PATH")) // Provide the $PATH variable so that external programs are runnable
+//         .env("STARSHIP_CONFIG", EMPTY_CONFIG.as_os_str());
+
+//     command
+// }
+
+// pub fn new_render_module(module_name: &str) -> String
+//     where
+//         T: Into<PathBuf>,
+//     {
+//     let args = clap::ArgMatches::default();
+//     new_render_module_with_args(module_name, args);
+// }
+
+// pub fn new_render_module_with_args(module_name: &str) -> String {
+//     let args = clap::ArgMatches::default();
+//     let context = Context::new_with_dir(args, &dir.into_path());
+
+//     modules::handle("python", &context).unwrap().to_string();
+// }
+
+// pub fn new_render_module(module_name: &str, arguments: &str) -> String {
+//     print::module(module_name);
+// }
 
 /// Create a temporary directory with full access permissions (rwxrwxrwt).
 pub fn new_tempdir() -> io::Result<tempfile::TempDir> {

@@ -1,5 +1,6 @@
 use clap::ArgMatches;
 use rayon::prelude::*;
+use std::collections::HashMap;
 use std::io::{self, Write};
 
 use crate::config::Config;
