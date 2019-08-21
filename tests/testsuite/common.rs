@@ -1,6 +1,7 @@
 use clap::ArgMatches;
 use lazy_static::lazy_static;
 use starship;
+use std::io;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::{io, process};
@@ -64,13 +65,13 @@ impl RenderModule {
         self
     }
 
-    pub fn output(&self) -> Option<String> {
+    pub fn output(&self) -> String {
         let app = starship::app::app();
         let args = app.get_matches_from(self.args);
         let context = starship::context::Context::new(args);
         
         let module = starship::modules::handle(self.module_name.as_ref(), &context);
-        module.map(|module| module.to_string())
+        module.map(|module| module.to_string()).unwrap()
     }
 }
 

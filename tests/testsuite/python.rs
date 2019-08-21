@@ -15,19 +15,7 @@ fn folder_with_python_version() -> io::Result<()> {
 
     let actual = common::render_module("python")
         .path(dir.path())
-        .output()
-        .unwrap();
-
-    // let args = clap::ArgMatches::default();
-
-    // let context = Context::new_with_dir(args, &dir.into_path());
-    // let actual = modules::handle("python", &context).unwrap().to_string();
-
-    // let output = common::render_module("python")
-    //     .arg("--path")
-    //     .arg(dir.path())
-    //     .output()?;
-    // let actual = String::from_utf8(output.stdout).unwrap();
+        .output();
 
     let expected = format!("via {} ", Color::Yellow.bold().paint("🐍 v3.6.9"));
     assert_eq!(expected, actual);
@@ -40,11 +28,9 @@ fn folder_with_requirements_txt() -> io::Result<()> {
     let dir = common::new_tempdir()?;
     File::create(dir.path().join("requirements.txt"))?;
 
-    let output = common::render_module("python")
-        .arg("--path")
-        .arg(dir.path())
-        .output()?;
-    let actual = String::from_utf8(output.stdout).unwrap();
+    let actual = common::render_module("python")
+        .path(dir.path())
+        .output();
 
     let expected = format!("via {} ", Color::Yellow.bold().paint("🐍 v3.6.9"));
     assert_eq!(expected, actual);
@@ -57,11 +43,9 @@ fn folder_with_pyproject_toml() -> io::Result<()> {
     let dir = common::new_tempdir()?;
     File::create(dir.path().join("pyproject.toml"))?;
 
-    let output = common::render_module("python")
-        .arg("--path")
-        .arg(dir.path())
-        .output()?;
-    let actual = String::from_utf8(output.stdout).unwrap();
+    let actual = common::render_module("python")
+        .path(dir.path())
+        .output();
 
     let expected = format!("via {} ", Color::Yellow.bold().paint("🐍 v3.6.9"));
     assert_eq!(expected, actual);
@@ -74,11 +58,9 @@ fn folder_with_py_file() -> io::Result<()> {
     let dir = common::new_tempdir()?;
     File::create(dir.path().join("main.py"))?;
 
-    let output = common::render_module("python")
-        .arg("--path")
-        .arg(dir.path())
-        .output()?;
-    let actual = String::from_utf8(output.stdout).unwrap();
+    let actual = common::render_module("python")
+        .path(dir.path())
+        .output();
 
     let expected = format!("via {} ", Color::Yellow.bold().paint("🐍 v3.6.9"));
     assert_eq!(expected, actual);
@@ -90,12 +72,11 @@ fn folder_with_py_file() -> io::Result<()> {
 fn with_virtual_env() -> io::Result<()> {
     let dir = common::new_tempdir()?;
     File::create(dir.path().join("main.py"))?;
-    let output = common::render_module("python")
+
+    let actual = common::render_module("python")
         .env("VIRTUAL_ENV", "/foo/bar/my_venv")
-        .arg("--path")
-        .arg(dir.path())
-        .output()?;
-    let actual = String::from_utf8(output.stdout).unwrap();
+        .path(dir.path())
+        .output();
 
     let expected = format!(
         "via {} ",
