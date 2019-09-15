@@ -6,33 +6,38 @@ jobs:
     name: Rustfmt [Formatter]
     runs-on: ubuntu-latest
     steps:
-      - uses: hecrj/setup-rust-action@master
       - uses: actions/checkout@master
-      - name: Install rustfmt
-        run: rustup component add rustfmt
-      - name: Run rustfmt
-        run: cargo fmt --all -- --check
+      - uses: actions-rs/toolchain@v1
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          arguments: --all -- --check
 
   # Run the `clippy` linting tool
   clippy:
     name: Clippy [Linter]
     runs-on: ubuntu-latest
     steps:
-      - uses: hecrj/setup-rust-action@master
       - uses: actions/checkout@master
-      - name: Install clippy
-        run: rustup component add clippy
-      - name: Run clippy
-        run: cargo clippy --all-targets --all-features -- -D clippy::all
+      - uses: actions-rs/toolchain@v1
+      - run: rustup component add clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          arguments: --all-targets --all-features -- -D clippy::all
 
   # Ensure that the project could be successfully compiled
   cargo_check:
     name: Compile
     runs-on: ubuntu-latest
     steps:
-      - uses: hecrj/setup-rust-action@master
       - uses: actions/checkout@master
-      - run: cargo check --all
+      - uses: actions-rs/toolchain@v1
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+          arguments: --all
 
   # Run tests on Linux, and macOS
   # On both Rust stable and Rust nightly
@@ -44,12 +49,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macOS-latest]
-        rust: [stable, nightly]
+        toolchain: [stable, nightly]
     steps:
-      # Install all the required dependencies for testing
-      - uses: hecrj/setup-rust-action@master
+      - uses: actions/checkout@master
+
+      # Install the required version of Rust
+      - uses: actions-rs/toolchain@v1
         with:
-          rust-version: ${{ matrix.rust }}
+          toolchain: ${{ matrix.toolchain }}
 
       # Install Node.js at a fixed version
       - uses: actions/setup-node@master
@@ -72,9 +79,10 @@ jobs:
           python-version: "3.6.9"
 
       # Run the ignored tests that expect the above setup
-      - uses: actions/checkout@master
-      - name: Run all tests
-        run: cargo test  -- -Z unstable-options --include-ignored
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          arguments: -- -Z unstable-options --include-ignored
 
   # Run the tests in the Docker image
   docker_test:
