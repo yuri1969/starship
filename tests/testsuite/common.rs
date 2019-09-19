@@ -40,7 +40,8 @@ pub fn render_module(module_name: &str) -> process::Command {
 pub fn new_tempdir() -> io::Result<tempfile::TempDir> {
     //  Using `tempfile::TempDir` directly creates files on macOS within
     // "/var/folders", which provides us with restricted permissions (rwxr-xr-x)
-    tempfile::tempdir_in("/tmp")
+    // tempfile::tempdir_in("/tmp")
+    tempfile::tempdir()
 }
 
 /// Create a repo from the fixture to be used in git module tests
