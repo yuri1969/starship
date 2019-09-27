@@ -421,6 +421,30 @@ fn directory_in_git_repo_truncate_to_repo_true() -> io::Result<()> {
 
 #[test]
 #[ignore]
+#[cfg(not(target_os = "windows"))]
+fn git_repo_in_home_directory_truncate_to_repo_true() -> io::Result<()> {
+    let tmp_home_dir = TempDir::new_in(dirs::home_dir().unwrap())?;
+    Repository::init(&tmp_home_dir).unwrap();
+
+    let output = common::render_module("directory")
+        .use_config(toml::toml! {
+            [directory]
+            // `truncate_to_repo = true` should attmpt to display the truncated path
+            truncate_to_repo = true
+        })
+        // Set home directory to the temp repository
+        .env("HOME", tmp_home_dir.path())
+        .arg("--path=~")
+        .output()?;
+    let actual = String::from_utf8(output.stdout).unwrap();
+
+    let expected = format!("in {} ", Color::Cyan.bold().paint("~"));
+    assert_eq!(expected, actual);
+    Ok(())
+}
+
+#[test]
+#[ignore]
 fn use_logical_and_physical_paths() -> io::Result<()> {
     /* This test is a bit of a smoke + mirrors trick because all it shows is that
     the application is reading the PWD envar correctly (if the shell doesn't
