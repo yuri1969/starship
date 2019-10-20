@@ -18,9 +18,19 @@ pub fn prompt(args: ArgMatches) {
 pub fn get_prompt(context: Context) -> String {
     let config = context.config.get_root_config();
     let mut buf = String::new();
+    let props = &context.properties;
+
+    let is_first_run = match props
+        .get("first_run")
+        .unwrap_or(&"false".to_owned())
+        .parse::<bool>()
+    {
+        Ok(value) => value,
+        Err(_) => false,
+    };
 
     // Write a new line before the prompt
-    if config.add_newline {
+    if config.add_newline && !is_first_run {
         writeln!(buf).unwrap();
     }
 

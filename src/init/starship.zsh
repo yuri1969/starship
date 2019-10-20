@@ -16,16 +16,21 @@ starship_precmd() {
 
     # Use length of jobstates array as number of jobs. Expansion fails inside
     # quotes so we set it here and then use the value later on.
-    NUM_JOBS=$#jobstates  
+    NUM_JOBS=$#jobstates
+
+    if [[ -z "$STARSHIP_FIRST_RUN" ]]; then
+        STARSHIP_FIRST_RUN=true # Signal that the prompt hasn't been printed yet
+    fi
     # Compute cmd_duration, if we have a time to consume
     if [[ ! -z "${STARSHIP_START_TIME+1}" ]]; then
         STARSHIP_END_TIME="$(date +%s)"
         STARSHIP_DURATION=$((STARSHIP_END_TIME - STARSHIP_START_TIME))
-        PROMPT="$(::STARSHIP:: prompt --status=$STATUS --cmd-duration=$STARSHIP_DURATION --jobs="$NUM_JOBS")"
+        PROMPT="$(::STARSHIP:: prompt --status=$STATUS --cmd-duration=$STARSHIP_DURATION --jobs="$NUM_JOBS" --first-run=${STARSHIP_FIRST_RUN})"
         unset STARSHIP_START_TIME
     else
-        PROMPT="$(::STARSHIP:: prompt --status=$STATUS --jobs="$NUM_JOBS")"
+        PROMPT="$(::STARSHIP:: prompt --status=$STATUS --jobs="$NUM_JOBS" --first-run=${STARSHIP_FIRST_RUN})"
     fi
+    STARSHIP_FIRST_RUN=false
 }
 starship_preexec(){
     STARSHIP_START_TIME="$(date +%s)"

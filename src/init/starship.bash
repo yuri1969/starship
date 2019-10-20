@@ -29,16 +29,20 @@ starship_precmd() {
     # Run the bash precmd function, if it's set. If not set, evaluates to no-op
     "${starship_precmd_user_func-:}"
 
+    if [[ -z "$STARSHIP_FIRST_RUN" ]]; then
+        STARSHIP_FIRST_RUN=true # Signal that the prompt hasn't been printed yet
+    fi
     # Prepare the timer data, if needed.
     if [[ $STARSHIP_START_TIME ]]; then
         STARSHIP_END_TIME=$(date +%s)
         STARSHIP_DURATION=$((STARSHIP_END_TIME - STARSHIP_START_TIME))
-        PS1="$(::STARSHIP:: prompt --status=$STATUS --jobs="$(jobs -p | wc -l)" --cmd-duration=$STARSHIP_DURATION)"
+        PS1="$(::STARSHIP:: prompt --status=$STATUS --jobs="$(jobs -p | wc -l)" --cmd-duration=$STARSHIP_DURATION --first-run=${STARSHIP_FIRST_RUN})"
         unset STARSHIP_START_TIME
     else
-        PS1="$(::STARSHIP:: prompt --status=$STATUS --jobs="$(jobs -p | wc -l)")"
+        PS1="$(::STARSHIP:: prompt --status=$STATUS --jobs="$(jobs -p | wc -l)" --first-run=${STARSHIP_FIRST_RUN})"
     fi
     PREEXEC_READY=true;  # Signal that we can safely restart the timer
+    STARSHIP_FIRST_RUN=false
 }
 
 # If the user appears to be using https://github.com/rcaloras/bash-preexec,
